@@ -1,0 +1,106 @@
+{% extends 'website/base.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+	<link rel="stylesheet" href={% static "website/css/history.css" %}>
+{% endblock %}
+
+
+{% block content %}
+
+	<section class="container text-center" style="padding-top: 150px;">
+	        <div class="row">
+	        	
+	        	<h4>{{ article.title }}</h4>
+	        	<strong>Edit History</strong>
+	        	<BR>
+	        		<BR>
+
+	        	<table>
+	        		<tr>
+	        			<td>Action</td>
+	        			<td>User</td>
+	        			<td>Time</td>
+	        			<td>From</td>
+	        			<td>To</td>
+	        			<td>Explanation</td>
+	        		</tr>
+	            {% for h in history %}
+	            	<tr>
+	            	{% if h.action == "hide_comment" %}
+	            		<td>Hide Comment</td>
+	            	{% elif h.action == "sum_comment" %}
+	            		<td>Summarize Comment</td>
+	            	{% elif h.action == "edit_sum" %}
+	            		<td>Edit Summary of a Comment</td>
+	            	{% elif h.action == "hide_replies" %}
+	            		<td>Hide All Replies of a Comment</td>
+	            	{% elif h.action == "hide_comments" %}
+	            		<td>Hide Multiple Comments</td>
+	            	{% elif h.action == "sum_nodes" %}
+	            		<td>Summarize Subtree</td>
+	            	{% elif h.action == "sum_selected" %}
+	            		<td>Summarize Group of Comments</td>
+	            	{% elif h.action == "edit_sum_nodes" %}
+	            		<td>Edit Summary of Subtree</td>
+	            	{% elif h.action == "move_comment" %}
+	            		<td>Move Comment</td>
+	            	{% elif h.action == "tag_comment" %}
+	            		<td>Tag Comment</td>
+	            	{% elif h.action == "tag_comments" %}
+	            		<td>Tag Comments</td>
+	            	{% endif %}
+	            	
+	            	{% if h.user %}
+	            		<td>{{ h.user.username }}</td>
+	            	{% else %}
+	            		<td>Anonymous</td>
+	            	{% endif %}
+	            	
+	            	<td>
+	            		{{ h.datetime }}
+	            	</td>
+	            	
+	            	<td>
+	            		{% if h.action == "edit_sum" or h.action == "edit_sum_nodes" %}
+	            			{{ h.from_str }}
+	            		{% else %}
+		            		<div class="comments">
+		            		{% for c in h.comments.all %}
+		            			<div class="comment">
+		            			  {% autoescape off %}
+								  {{ c.text }}
+								  {% endautoescape %}
+							    </div>
+							{% endfor %}
+							</div>
+						{% endif %}
+	            	</td>
+	            	
+	            	<td>{% if h.action == "hide_comment" %}
+	            			Comment Hidden
+	            		{% elif h.action == "hide_replies" %}
+	            			All Comments Hidden
+	            		{% elif h.action == "hide_comments" %}
+	            			All Comments Hidden
+	            		{% elif h.action == "move_comment" %}
+	            			Move Comment
+	            		{% else %}
+	            			{{ h.to_str }}
+	            		{% endif %} </td>
+	            	
+	            	<td>
+	            		{{ h.explanation }}
+	            	</td>
+	            	
+	            	</tr>
+	            {% endfor %}
+	           </table>
+	        </div>
+	</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,24 @@
+
+td {
+	padding: 5px;
+	border: #ffffff solid 10px;
+	background-color: #eef7fa;
+	text-align: left;
+}
+
+.comment {
+}
+
+table {
+	width: 100%;
+}
+
+p {
+	font-size: 10px;
+	margin-bottom: 10px;
+}
+
+.comments {
+	max-height: 100px;
+	overflow-x: scroll;
+}

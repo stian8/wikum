@@ -1,0 +1,67 @@
+{% extends 'website/base.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+	<link rel="stylesheet" href={% static "website/css/summary.css" %}>
+	<link rel="stylesheet" href={% static "website/css/summary1.css" %}>
+	<link rel="stylesheet" href={% static "website/css/summary2.css" %}>
+{% endblock %}
+
+
+{% block content %}
+
+<span id="highlight_authors" style="display:none;">{{ article.highlight_authors }}</span>
+
+<header class="container content-section text-center" style="padding-top: 150px;">
+	<div class="row">
+		<div class="col-lg-8 col-lg-offset-2">
+			<h1><a href="{{ article.url }}" title="Read the article in {{ source.source_name }}">{{ article.title }}</a></h1>
+			<a href="/visualization?article={{ article.url }}&num={{ num }}">View Wikum Editing Interface</a>
+			<BR>
+				Interface: <a href="/summary?article={{ url }}&num={{ num }}">0</a> | 
+				<a href="/summary1?article={{ url }}&num={{ num }}">1</a> | 
+				<a href="/summary2?article={{ url }}&num={{ num }}">2</a> |
+				<a href="/summary3?article={{ url }}&num={{ num }}">3</a> |
+				<a href="/summary4?article={{ url }}&num={{ num }}">4</a>
+			<BR><BR>
+				Full threading view, Auto-horizontal scrolling, 3 levels of context
+		</div>
+	</div>
+</header>
+
+<section id="contact" style="padding-top: 50px;">
+	<div class="row">
+	<div class="col-lg-8 col-lg-offset-2">
+ 			<div id="summary">
+            </div>
+    </div>
+    </div>
+    
+    <div id="width_setter"></div>
+    
+    <div id="first_summary"></div>
+    <div id="second_summary"></div>
+    <div id="third_summary"></div>
+    
+    <div class="row">
+	<div class="col-lg-8 col-lg-offset-2">
+    
+  	<div id="link_next">
+  	</div>
+  	
+  </div>
+  </div>
+
+</section>
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+
+	<script src={% static "website/js/summary_base.js" %}></script>
+	<script src={% static "website/js/summary2.js" %}></script>
+
+{% endblock %}
