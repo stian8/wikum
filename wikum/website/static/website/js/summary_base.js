@@ -1,4 +1,3 @@
-
 var discuss_dict = {};
 
 function strip_html(text) {
