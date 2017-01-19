@@ -108,7 +108,7 @@ function check_button_checkbox() {
 
             // Inject the icon if applicable
             if ($button.find('.state-icon').length == 0) {
-                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
+                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
             }
         }
         init();
@@ -3179,6 +3179,8 @@ function stroke(d) {
 	if (d.article) {
 		return "#000000";
 	}
+
+	
  }
 
 function color(d) {
@@ -3196,7 +3198,14 @@ function color(d) {
 	}
 
 	if (d.collapsed) {
-		return "#f8c899";
+		if (d.summary){
+			return "#d3d3d3";
+		}
+		return "#a1c5d1";
+	}
+
+	if (d.summary) {
+		return "#d3d3d3";
 	}
 
 	return "#a1c5d1";

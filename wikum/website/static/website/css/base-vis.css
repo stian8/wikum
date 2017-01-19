@@ -408,13 +408,13 @@ rect.selection {
 	}
 
 .collapsed {
-	background-color: hsl(50, 100%, 95%);
-	border-color: hsl(40, 100%, 75%);
-	--link-color: hsl(45, 100%, 46%);
+	background-color: hsl(195, 59%, 96%);
+	border: 1px hsl(195, 59%, 85%) solid;
+	--link-color: hsl(195, 59%, 60%);
 }
 
 	.collapsed footer {
-		--background: hsl(45, 100%, 83%);
+		--background: hsl(195, 59%, 90%);
 	}
 
 .highlighted {
@@ -579,6 +579,11 @@ a.btn-edit {
   .ghostCircle, .activeDrag .ghostCircle{
        display: none;
   }
+/*
+#summarize_comment_box {
+	background-color: var(--link-color);
+}
+*/
 
 #summarize_multiple_modal_box {
 	width: 70%;
