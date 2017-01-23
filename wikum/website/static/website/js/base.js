@@ -426,7 +426,7 @@ $('#tag_modal_box').on('show.bs.modal', function(e) {
 	});
 });
 
-
+/* typeahead refers toe the filter search on the top left*/
 $('#hide_modal_box').on('show.bs.modal', function(e) {
 	var id = $(e.relatedTarget).data('id');
 	var type = $(e.relatedTarget).data('type');
@@ -1839,6 +1839,8 @@ function get_id(d_id) {
 
 function render_summary_node(d, show_collapsible) {
 
+/*extra_summary shows the summary under the fold*/
+/*comment_reference is the number next to the summarized stuff that links up*/
 	summary = d.summary.replace(/\n\n/g,'</p><p>');
 	text = '<p>' + summary + '</p>';
 
@@ -2793,7 +2795,7 @@ function highlight_node(id) {
 	if (id != 1) {
 		d3.select("#node_" + id)
 			.attr("class", "clicked")
-			.style("stroke","#000000")
+			.style("stroke",stroke)
 			.style("stroke-width", stroke_width);
 	}
 }
@@ -2813,7 +2815,7 @@ function highlight_link(from_id, to_id) {
 			extra_highlight_node(from_id);
 			d3.select(this)
 				.transition()
-				.style("stroke", "#cccccc")
+				.style("stroke", stroke)
 				.style("stroke-width", "2px");
 
 		});
@@ -2918,7 +2920,7 @@ function extra_highlight_node(id) {
 function unextra_highlight_node(id) {
 	if (id != 1) {
 		d3.select("#node_" + id)
-			.style("stroke","#000000")
+			.style("stroke",stroke)
 			.style("stroke-width", stroke_width);
 		highlight_box(id);
 	}
@@ -3180,6 +3182,15 @@ function stroke(d) {
 		return "#000000";
 	}
 
+	if (d.summary) {
+		return "ee7600";
+	}
+
+	if (d.collapsed) {
+		if(d.summary) {
+			return "ee7600";
+		}
+	}
 	
  }
 
@@ -3198,19 +3209,13 @@ function color(d) {
 	}
 
 	if (d.collapsed) {
-		if (d.summary){
-			return "#d3d3d3";
-		}
-		return "#a1c5d1";
-	}
-
-	if (d.summary) {
-		return "#d3d3d3";
+		return "#FFF2E6";
 	}
 
 	return "#a1c5d1";
 
 }
+
 
 function count_unsummarized_words(d) {
 	count = 0;

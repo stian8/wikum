@@ -344,6 +344,7 @@ rect.selection {
     fill            : transparent;
 }
 
+
 .comment_box,
 .summarize_comment_comment {
 	background-color: hsl(195, 59%, 96%);
@@ -360,6 +361,8 @@ rect.selection {
 	}
 
 	.comment_box a,
+	/* .summarize_comment_comment highlights all the different buttons in the boxes
+	*/
 	.summarize_comment_comment a {
 		mix-blend-mode: multiply;
 		font-weight: 500;
@@ -416,6 +419,7 @@ rect.selection {
 	.collapsed footer {
 		--background: hsl(195, 59%, 90%);
 	}
+
 
 .highlighted {
 	border: 1px #000000 solid;
@@ -589,6 +593,8 @@ a.btn-edit {
 	width: 70%;
 	height: 80%;
 }
+
+
 
 #summarize_multiple_comment_textarea {
 	width: 100%;
