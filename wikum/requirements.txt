@@ -8,6 +8,7 @@ breadability==0.1.20
 bz2file==0.98
 celery==4.0.0rc6
 chardet==2.3.0
+channels==2.1.7
 cycler==0.10.0
 decorator==4.0.6
 distribute==0.6.24
@@ -27,6 +28,7 @@ mysql==0.0.1
 mysqlclient==1.3.9
 nltk==3.2.1
 pandas==0.18.0
+pathlib==1.0.1
 path.py==8.1.2
 pbr==1.8.1
 pexpect==4.0.1

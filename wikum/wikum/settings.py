@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'website',
     'tracking',
     'account',
+    'channels',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -128,6 +129,7 @@ TEMPLATES = [
     },
 ]
 
+ASGI_APPLICATION = "wikum.routing.application"
 WSGI_APPLICATION = 'wikum.wsgi.application'
 
 
