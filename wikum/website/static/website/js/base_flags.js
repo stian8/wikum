@@ -380,9 +380,8 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 });
 
 chatsock.onmessage = function(message) {
-    var data = JSON.parse(message.data);
-    console.log("REAL TIME");
-    console.log(data);
+    var res = JSON.parse(message.data);
+    console.log(res);
     if (res.comment == 'unauthorized') {
 		unauthorized_noty();
 	} else {
