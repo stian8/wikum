@@ -297,9 +297,8 @@ $('#permission_modal_box').on('show.bs.modal', function(e) {
 });
 
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-var chat_socket = new WebSocket(ws_scheme + '://' + window.location.host + "/new_node" + window.location.pathname);
-console.log(ws_scheme + '://' + window.location.host + "/new_node" + window.location.pathname);
-// localhost:8000; visualization_flags; new%20logged%20in (title); sunnytian#; 0
+var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/" + $('#article_id').text() + window.location.pathname);
+console.log(ws_scheme + '://' + window.location.host + window.location.pathname);
 
 $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	$("#new_node_textarea").val("");
@@ -326,59 +325,98 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 		var data = {csrfmiddlewaretoken: csrf,
 			comment: comment,
 			owner: owner,
-			article: article_id};
+			article: article_id,
+			type: 'new_node'};
 
 		data.id = evt.data.data_id;
 
-		// chatsock.send(JSON.stringify(data));
+		chatsock.send(JSON.stringify(data));
 
-		$.ajax({
-			type: 'POST',
-			url: '/new_node',
-			data: data,
-			success: function(res) {
-				if (res.comment == 'unauthorized') {
-					unauthorized_noty();
-				} else {
-					new_d = {d_id: res.d_id,
-							 name: res.comment,
-							 summary: "",
-							 summarized: false,
-							 extra_summary: "",
-							 parent: nodes_all[0],
-							 replace: [],
-							 author: res.author,
-							 tags: [],
-							 collapsed: false,
-							 replace_node: false,
-							 hid: [],
-							 depth: 1
-							};
+		// $.ajax({
+		// 	type: 'POST',
+		// 	url: '/new_node',
+		// 	data: data,
+		// 	success: function(res) {
+		// 		if (res.comment == 'unauthorized') {
+		// 			unauthorized_noty();
+		// 		} else {
+		// 			new_d = {d_id: res.d_id,
+		// 					 name: res.comment,
+		// 					 summary: "",
+		// 					 summarized: false,
+		// 					 extra_summary: "",
+		// 					 parent: nodes_all[0],
+		// 					 replace: [],
+		// 					 author: res.author,
+		// 					 tags: [],
+		// 					 collapsed: false,
+		// 					 replace_node: false,
+		// 					 hid: [],
+		// 					 depth: 1
+		// 					};
 
-					insert_node_to_children(new_d, new_d.parent);
-					update(new_d.parent);
+		// 			insert_node_to_children(new_d, new_d.parent);
+		// 			update(new_d.parent);
 
-					var text = construct_comment(new_d);
-					$('#comment_' + new_d.d_id).html(text);
-					$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
-					author_hover();
-					show_text(new_d.parent);
+		// 			var text = construct_comment(new_d);
+		// 			$('#comment_' + new_d.d_id).html(text);
+		// 			$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
+		// 			author_hover();
+		// 			show_text(new_d.parent);
 					
-					d3.select("#node_" + new_d.d_id).style("fill",color);
+		// 			d3.select("#node_" + new_d.d_id).style("fill",color);
 
-					highlight_box(new_d.d_id);
-					make_progress_bar();
-					success_noty();
-				}
+		// 			highlight_box(new_d.d_id);
+		// 			make_progress_bar();
+		// 			success_noty();
+		// 		}
 
-			},
-			error: function() {
-				error_noty();
-			}
-		});
+		// 	},
+		// 	error: function() {
+		// 		error_noty();
+		// 	}
+		// });
 	});
-
 });
+
+chatsock.onmessage = function(message) {
+    var data = JSON.parse(message.data);
+    console.log("REAL TIME");
+    console.log(data);
+    if (res.comment == 'unauthorized') {
+		unauthorized_noty();
+	} else {
+		new_d = {d_id: res.d_id,
+				 name: res.comment,
+				 summary: "",
+				 summarized: false,
+				 extra_summary: "",
+				 parent: nodes_all[0],
+				 replace: [],
+				 author: res.author,
+				 tags: [],
+				 collapsed: false,
+				 replace_node: false,
+				 hid: [],
+				 depth: 1
+				};
+
+		insert_node_to_children(new_d, new_d.parent);
+		update(new_d.parent);
+
+		var text = construct_comment(new_d);
+		$('#comment_' + new_d.d_id).html(text);
+		$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
+		author_hover();
+		show_text(new_d.parent);
+		
+		d3.select("#node_" + new_d.d_id).style("fill",color);
+
+		highlight_box(new_d.d_id);
+		make_progress_bar();
+		success_noty();
+	}
+};
 
 
 $('#reply_modal_box').on('show.bs.modal', function(e) {
@@ -428,7 +466,8 @@ $('#reply_modal_box').on('show.bs.modal', function(e) {
 		var data = {csrfmiddlewaretoken: csrf,
 			comment: comment,
 			owner: owner,
-			article: article_id};
+			article: article_id,
+			type: 'reply_comment'};
 
 		data.id = evt.data.data_id;
 		if (check_parent_duplicate(nodes_all[id-1], comment)) {
