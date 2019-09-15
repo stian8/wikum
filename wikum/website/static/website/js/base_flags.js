@@ -11,10 +11,6 @@ var article_url = $('#article_url').text();
 var owner = getParameterByName('owner');
 var article_id = $('#article_id').text();
 
-var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/wikum" + window.location.pathname + article_url + owner + article_id);
-// localhost:8000; visualization_flags; new%20logged%20in (title); sunnytian#; 0
-
 function highlight_sents() {
 	d_ids = current_summarize_d_id;
 	var csrf = $('#csrf').text();
@@ -300,6 +296,11 @@ $('#permission_modal_box').on('show.bs.modal', function(e) {
 	}
 });
 
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+var chat_socket = new WebSocket(ws_scheme + '://' + window.location.host + "/new_node" + window.location.pathname);
+console.log(ws_scheme + '://' + window.location.host + "/new_node" + window.location.pathname);
+// localhost:8000; visualization_flags; new%20logged%20in (title); sunnytian#; 0
+
 $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	$("#new_node_textarea").val("");
 	$.ajax({type: 'GET',
@@ -328,7 +329,8 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 			article: article_id};
 
 		data.id = evt.data.data_id;
-		//chatsock.send(JSON.stringify(data));
+
+		// chatsock.send(JSON.stringify(data));
 
 		$.ajax({
 			type: 'POST',
