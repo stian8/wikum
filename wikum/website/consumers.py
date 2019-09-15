@@ -91,17 +91,33 @@ def ws_receive(message):
                         # existing user who is not a comment author
                         author = CommentAuthor.objects.create(username=req_username, is_wikum=True, user=user)
                 new_id = random_with_N_digits(10)
-                new_comment = Comment.objects.create(article=article,
-                                                     author=author,
-                                                     is_replacement=False,
-                                                     disqus_id=new_id,
-                                                     text=comment,
-                                                     summarized=False,
-                                                     text_len=len(comment))
-                new_comment.save()
-                action = 'new_node'
-                explanation = 'new comment'
+                new_comment = None
+                explanation = ''
+                if data['type'] == 'new_node':
+                    new_comment = Comment.objects.create(article=article,
+                                                         author=author,
+                                                         is_replacement=False,
+                                                         disqus_id=new_id,
+                                                         text=comment,
+                                                         summarized=False,
+                                                         text_len=len(comment))
+                    explanation = 'new comment'
+                elif data['type'] == 'reply_comment':
+                    id = data['id']
+                    c = Comment.objects.get(id=id)
+                    new_comment = Comment.objects.create(article=article,
+                                                         author=author,
+                                                         is_replacement=False,
+                                                         reply_to_disqus=c.disqus_id,
+                                                         disqus_id=new_id,
+                                                         text=comment,
+                                                         summarized=False,
+                                                         text_len=len(comment),
+                                                         import_order=c.import_order)
+                    explanation = 'reply to comment'
 
+                new_comment.save()
+                action = data['type']
                 h = History.objects.create(user=req_user,
                                            article=article,
                                            action=action,
@@ -118,8 +134,10 @@ def ws_receive(message):
                 article.last_updated = datetime.datetime.now(tz=timezone.utc)
 
                 article.save()
-                print("ARTICLE SAVED")
-                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type']})})
+                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type']}
+                if data['type'] == 'reply_comment':
+                    response_dict['node_id'] = data['node_id']
+                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
             else:
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': 'unauthorized'})})
         except Exception, e:

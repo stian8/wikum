@@ -298,7 +298,6 @@ $('#permission_modal_box').on('show.bs.modal', function(e) {
 
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/" + $('#article_id').text() + window.location.pathname);
-console.log(ws_scheme + '://' + window.location.host + window.location.pathname);
 
 $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	$("#new_node_textarea").val("");
@@ -379,45 +378,6 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	});
 });
 
-chatsock.onmessage = function(message) {
-    var res = JSON.parse(message.data);
-    console.log(res);
-    if (res.comment == 'unauthorized') {
-		unauthorized_noty();
-	} else {
-		new_d = {d_id: res.d_id,
-				 name: res.comment,
-				 summary: "",
-				 summarized: false,
-				 extra_summary: "",
-				 parent: nodes_all[0],
-				 replace: [],
-				 author: res.author,
-				 tags: [],
-				 collapsed: false,
-				 replace_node: false,
-				 hid: [],
-				 depth: 1
-				};
-
-		insert_node_to_children(new_d, new_d.parent);
-		update(new_d.parent);
-
-		var text = construct_comment(new_d);
-		$('#comment_' + new_d.d_id).html(text);
-		$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
-		author_hover();
-		show_text(new_d.parent);
-		
-		d3.select("#node_" + new_d.d_id).style("fill",color);
-
-		highlight_box(new_d.d_id);
-		make_progress_bar();
-		success_noty();
-	}
-};
-
-
 $('#reply_modal_box').on('show.bs.modal', function(e) {
 	var id = $(e.relatedTarget).data('id');
 	$("#reply_comment_textarea").val('');
@@ -467,73 +427,150 @@ $('#reply_modal_box').on('show.bs.modal', function(e) {
 			owner: owner,
 			article: article_id,
 			type: 'reply_comment'};
-
 		data.id = evt.data.data_id;
+		data.node_id = evt.data.id;
 		if (check_parent_duplicate(nodes_all[id-1], comment)) {
 			identical_noty();
 		} else {
-			$.ajax({
-				type: 'POST',
-				url: '/reply_comment',
-				data: data,
-				success: function(res) {
-					if (res.comment == 'unauthorized') {
-						unauthorized_noty();
-					} else {
-						d = nodes_all[evt.data.id-1];
-						new_d = {d_id: res.d_id,
-									 name: res.comment,
-									 summary: "",
-									 summarized: false,
-									 extra_summary: "",
-									 parent: d,
-									 replace: [],
-									 author: res.author,
-									 tags: [],
-									 collapsed: false,
-									 replace_node: false,
-									 size: d.size,
-									 hid: [],
-									 depth: d.depth+1,
-									 x: d.x,
-									 x0: d.x0,
-									 y: d.y,
-									 y0: d.y0,
-									};
-						recurse_expand_all(new_d.parent);
-						if (!d.children) {
-							d.children = [];
-						}
-						if (!d._children) {
-							d._children = [];
-						}
-						d.children.push(new_d);
-						d._children.push(new_d);
-						update(new_d.parent);
+			chatsock.send(JSON.stringify(data));
+			// $.ajax({
+			// 	type: 'POST',
+			// 	url: '/reply_comment',
+			// 	data: data,
+			// 	success: function(res) {
+			// 		if (res.comment == 'unauthorized') {
+			// 			unauthorized_noty();
+			// 		} else {
+			// 			d = nodes_all[evt.data.id-1];
+			// 			new_d = {d_id: res.d_id,
+			// 						 name: res.comment,
+			// 						 summary: "",
+			// 						 summarized: false,
+			// 						 extra_summary: "",
+			// 						 parent: d,
+			// 						 replace: [],
+			// 						 author: res.author,
+			// 						 tags: [],
+			// 						 collapsed: false,
+			// 						 replace_node: false,
+			// 						 size: d.size,
+			// 						 hid: [],
+			// 						 depth: d.depth+1,
+			// 						 x: d.x,
+			// 						 x0: d.x0,
+			// 						 y: d.y,
+			// 						 y0: d.y0,
+			// 						};
+			// 			recurse_expand_all(new_d.parent);
+			// 			if (!d.children) {
+			// 				d.children = [];
+			// 			}
+			// 			if (!d._children) {
+			// 				d._children = [];
+			// 			}
+			// 			d.children.push(new_d);
+			// 			d._children.push(new_d);
+			// 			update(new_d.parent);
 
-						var text = construct_comment(new_d);
-						$('#comment_' + new_d.d_id).html(text);
-						$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
-						author_hover();
-						show_text(nodes_all[0]);
+			// 			var text = construct_comment(new_d);
+			// 			$('#comment_' + new_d.d_id).html(text);
+			// 			$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
+			// 			author_hover();
+			// 			show_text(nodes_all[0]);
 						
-						d3.select("#node_" + new_d.d_id).style("fill",color);
-						d3.select('#node_' + d.id).style('fill', color);
+			// 			d3.select("#node_" + new_d.d_id).style("fill",color);
+			// 			d3.select('#node_' + d.id).style('fill', color);
 
-						highlight_box(new_d.d_id);
-						make_progress_bar();
-						success_noty();
-					}
+			// 			highlight_box(new_d.d_id);
+			// 			make_progress_bar();
+			// 			success_noty();
+			// 		}
 
-				},
-				error: function() {
-					error_noty();
-				}
-			});
+			// 	},
+			// 	error: function() {
+			// 		error_noty();
+			// 	}
+			// });
 		}
 	});
 
 });
+
+chatsock.onmessage = function(message) {
+    var res = JSON.parse(message.data);
+    if (res.comment === 'unauthorized') {
+		unauthorized_noty();
+	} else {
+		if (res.type === 'new_node') {
+			new_d = {d_id: res.d_id,
+				 name: res.comment,
+				 summary: "",
+				 summarized: false,
+				 extra_summary: "",
+				 parent: nodes_all[0],
+				 replace: [],
+				 author: res.author,
+				 tags: [],
+				 collapsed: false,
+				 replace_node: false,
+				 hid: [],
+				 depth: 1
+				};
+
+			insert_node_to_children(new_d, new_d.parent);
+		} else if (res.type === 'reply_comment') {
+			let node_id = res.node_id;
+			d = nodes_all[node_id-1];
+			new_d = {d_id: res.d_id,
+			          name: res.comment,
+			          summary: "",
+			          summarized: false,
+			          extra_summary: "",
+			          parent: d,
+			          replace: [],
+			          author: res.author,
+			          tags: [],
+			          collapsed: false,
+			          replace_node: false,
+			          size: d.size,
+			          hid: [],
+			          depth: d.depth+1,
+			          x: d.x,
+			          x0: d.x0,
+			          y: d.y,
+			          y0: d.y0,
+			         };
+			recurse_expand_all(new_d.parent);
+			if (!d.children) {
+			 d.children = [];
+			}
+			if (!d._children) {
+			 d._children = [];
+			}
+			d.children.push(new_d);
+			d._children.push(new_d);
+		}
+		
+		update(new_d.parent);
+
+		var text = construct_comment(new_d);
+		$('#comment_' + new_d.d_id).html(text);
+		$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
+		author_hover();
+		show_text(nodes_all[0]);
+		
+		d3.select("#node_" + new_d.d_id).style("fill",color);
+		d3.select('#node_' + d.id).style('fill', color);
+
+		highlight_box(new_d.d_id);
+		make_progress_bar();
+		success_noty();
+	}
+};
+
+chatsock.onerror = function(message) {
+	error_noty();
+}
 
 
 $('#evaluate_summary_modal_box').on('show.bs.modal', function(e) {
