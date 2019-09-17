@@ -297,7 +297,8 @@ $('#permission_modal_box').on('show.bs.modal', function(e) {
 });
 
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-var chatsock = new WebSocket(ws_scheme + '://' + window.location.host + "/" + $('#article_id').text() + window.location.pathname);
+// TODO: change WebSocket to ReconnectingWebSocket
+var chatsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/" + $('#article_id').text() + window.location.pathname);
 
 $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	$("#new_node_textarea").val("");
@@ -516,7 +517,6 @@ chatsock.onmessage = function(message) {
 				 hid: [],
 				 depth: 1
 				};
-
 			insert_node_to_children(new_d, new_d.parent);
 		} else if (res.type === 'reply_comment') {
 			let node_id = res.node_id;
@@ -560,16 +560,17 @@ chatsock.onmessage = function(message) {
 		show_text(nodes_all[0]);
 		
 		d3.select("#node_" + new_d.d_id).style("fill",color);
-		d3.select('#node_' + d.id).style('fill', color);
+		if (res.type === 'reply_comment') d3.select('#node_' + d.id).style('fill', color);
 
 		highlight_box(new_d.d_id);
 		make_progress_bar();
-		success_noty();
+		if (res.user === $("#owner")[0].innerHTML) success_noty();
 	}
 };
 
 chatsock.onerror = function(message) {
-	error_noty();
+	var res = JSON.parse(message.data);
+	if (res.user === $("#owner")[0].innerHTML) error_noty();
 }
 
 

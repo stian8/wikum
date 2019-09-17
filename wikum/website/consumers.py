@@ -134,7 +134,7 @@ def ws_receive(message):
                 article.last_updated = datetime.datetime.now(tz=timezone.utc)
 
                 article.save()
-                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type']}
+                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type'], 'user': user.username}
                 if data['type'] == 'reply_comment':
                     response_dict['node_id'] = data['node_id']
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})

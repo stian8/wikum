@@ -643,12 +643,6 @@ def new_node(request):
 
         article_id = request.POST['article']
         article = Article.objects.get(id=article_id)
-        comment = request.POST['comment']
-        req_user = request.user if request.user.is_authenticated() else None
-        req_username = request.user.username if request.user.is_authenticated() else None
-        author = CommentAuthor.objects.filter(username=req_username)
-        if author.exists():
-            author = author[0]
 
         permission = None
         if user.is_authenticated():
