@@ -199,7 +199,7 @@ def handle_tags(message, data, article, article_id):
             else:
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
         elif data['type'] == 'tag_selected':
-            ids = data.getlist('ids[]')
+            ids = data['ids']
             comments = Comment.objects.filter(id__in=ids, hidden=False)
             
             affected_comms = [];
