@@ -1765,6 +1765,7 @@ def tags(request):
     else:
         owner = User.objects.get(username=owner)
     
+    print(request.GET['id'])
     article_id = int(request.GET['id'])
     a = Article.objects.get(id=article_id)
     

@@ -59,90 +59,182 @@ def ws_receive(message):
         log.debug("ws message isn't json text=%s", text)
         return
 
-    if data:
-        try:
-            user = message.user
-            owner = data.get('owner', None)
-            if not owner or owner == "None":
-                owner = None
+    if data and 'type' in data:
+        data_type = data['type']
+        if data_type == 'new_node' or data_type == 'reply_comment':
+            handle_message(message, data, article, article_id)
+        elif data_type == 'tag_one' or data_type == 'tag_selected':
+            handle_tags(message, data, article, article_id)
+
+def handle_message(message, data, article, article_id):
+    try:
+        user = message.user
+        owner = data.get('owner', None)
+        if not owner or owner == "None":
+            owner = None
+        else:
+            owner = User.objects.get(username=owner)
+
+        permission = None
+        if user.is_authenticated():
+            permission = Permissions.objects.filter(user=user, article=article)
+            if permission.exists():
+                permission = permission[0]
+        if article.access_mode < 2 or (user.is_authenticated() and permission and (permission.access_level < 2)) or user == owner:
+            comment = data['comment']
+            req_user = message.user if message.user.is_authenticated() else None
+            req_username = message.user.username if message.user.is_authenticated() else None
+            # if commentauthor for username use it; otherwise create it
+            author = CommentAuthor.objects.filter(username=req_username)
+            if user.is_anonymous():
+                req_username = "Anonymous"
+                author = CommentAuthor.objects.create(username=req_username, anonymous=True, is_wikum=True)
             else:
-                owner = User.objects.get(username=owner)
-
-            permission = None
-            if user.is_authenticated():
-                permission = Permissions.objects.filter(user=user, article=article)
-                if permission.exists():
-                    permission = permission[0]
-            if article.access_mode < 2 or (user.is_authenticated() and permission and (permission.access_level < 2)) or user == owner:
-                comment = data['comment']
-                req_user = message.user if message.user.is_authenticated() else None
-                req_username = message.user.username if message.user.is_authenticated() else None
-                # if commentauthor for username use it; otherwise create it
-                author = CommentAuthor.objects.filter(username=req_username)
-                if user.is_anonymous():
-                    req_username = "Anonymous"
-                    author = CommentAuthor.objects.create(username=req_username, anonymous=True, is_wikum=True)
+                if author.exists():
+                    author = author[0]
+                    author.is_wikum = True
+                    author.user = user
                 else:
-                    if author.exists():
-                        author = author[0]
-                        author.is_wikum = True
-                        author.user = user
-                    else:
-                        # existing user who is not a comment author
-                        author = CommentAuthor.objects.create(username=req_username, is_wikum=True, user=user)
-                new_id = random_with_N_digits(10)
-                new_comment = None
-                explanation = ''
-                if data['type'] == 'new_node':
-                    new_comment = Comment.objects.create(article=article,
-                                                         author=author,
-                                                         is_replacement=False,
-                                                         disqus_id=new_id,
-                                                         text=comment,
-                                                         summarized=False,
-                                                         text_len=len(comment))
-                    explanation = 'new comment'
-                elif data['type'] == 'reply_comment':
-                    id = data['id']
-                    c = Comment.objects.get(id=id)
-                    new_comment = Comment.objects.create(article=article,
-                                                         author=author,
-                                                         is_replacement=False,
-                                                         reply_to_disqus=c.disqus_id,
-                                                         disqus_id=new_id,
-                                                         text=comment,
-                                                         summarized=False,
-                                                         text_len=len(comment),
-                                                         import_order=c.import_order)
-                    explanation = 'reply to comment'
+                    # existing user who is not a comment author
+                    author = CommentAuthor.objects.create(username=req_username, is_wikum=True, user=user)
+            new_id = random_with_N_digits(10)
+            new_comment = None
+            explanation = ''
+            if data['type'] == 'new_node':
+                new_comment = Comment.objects.create(article=article,
+                                                     author=author,
+                                                     is_replacement=False,
+                                                     disqus_id=new_id,
+                                                     text=comment,
+                                                     summarized=False,
+                                                     text_len=len(comment))
+                explanation = 'new comment'
+            elif data['type'] == 'reply_comment':
+                id = data['id']
+                c = Comment.objects.get(id=id)
+                new_comment = Comment.objects.create(article=article,
+                                                     author=author,
+                                                     is_replacement=False,
+                                                     reply_to_disqus=c.disqus_id,
+                                                     disqus_id=new_id,
+                                                     text=comment,
+                                                     summarized=False,
+                                                     text_len=len(comment),
+                                                     import_order=c.import_order)
+                explanation = 'reply to comment'
 
-                new_comment.save()
-                action = data['type']
-                h = History.objects.create(user=req_user,
+            new_comment.save()
+            action = data['type']
+            h = History.objects.create(user=req_user,
+                                       article=article,
+                                       action=action,
+                                       explanation=explanation)
+
+            h.comments.add(new_comment)
+            recurse_up_post(new_comment)
+
+            recurse_down_num_subtree(new_comment)
+
+            # make_vector(new_comment, article)
+            article.comment_num = article.comment_num + 1
+            article.percent_complete = count_article(article)
+            article.last_updated = datetime.datetime.now(tz=timezone.utc)
+
+            article.save()
+            response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type'], 'user': user.username}
+            if data['type'] == 'reply_comment':
+                response_dict['node_id'] = data['node_id']
+            Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
+        else:
+            Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': 'unauthorized'})})
+    except Exception, e:
+        print e
+        return
+
+def handle_tags(message, data, article, article_id):
+    try:
+        tag = data['tag']
+        req_user = message.user if message.user.is_authenticated() else None
+        
+        t, created = Tag.objects.get_or_create(article=article, text=tag.lower().strip())
+        if created:
+            r = lambda: random.randint(0, 255)
+            color = '%02X%02X%02X' % (r(), r(), r())
+            t.color = color
+            t.save()
+        else:
+            color = t.color
+        
+        if data['type'] == 'tag_one':
+            id = data['id']
+            comment = Comment.objects.get(id=id)
+            affected= False
+            
+            tag_exists = comment.tags.filter(text=t.text)
+            if tag_exists.count() == 0:
+                comment.tags.add(t)
+                affected = True
+                
+            if affected:
+                h = History.objects.create(user=req_user, 
                                            article=article,
-                                           action=action,
-                                           explanation=explanation)
-
-                h.comments.add(new_comment)
-                recurse_up_post(new_comment)
-
-                recurse_down_num_subtree(new_comment)
-
-                # make_vector(new_comment, article)
-                article.comment_num = article.comment_num + 1
-                article.percent_complete = count_article(article)
+                                           action='tag_comment',
+                                           explanation="Add tag %s to a comment" % t.text)
+                
+                h.comments.add(comment)
+                
                 article.last_updated = datetime.datetime.now(tz=timezone.utc)
-
                 article.save()
-                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type'], 'user': user.username}
-                if data['type'] == 'reply_comment':
-                    response_dict['node_id'] = data['node_id']
+                
+                recurse_up_post(comment)
+                    
+            tag_count = article.comment_set.filter(tags__isnull=False).count()
+            if tag_count % 2 == 0:
+                from tasks import generate_tags
+                generate_tags.delay(article_id)
+            
+            if affected:
+                response_dict = {'color': color, 'type': data['type'], 'node_id': data['node_id'], 'tag': data['tag'], 'id_str': data['id_str'], 'did_str': data['id_str']}
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
             else:
-                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': 'unauthorized'})})
-        except Exception, e:
-            print e
-            return
+                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
+        elif data['type'] == 'tag_selected':
+            ids = data.getlist('ids[]')
+            comments = Comment.objects.filter(id__in=ids, hidden=False)
+            
+            affected_comms = [];
+            
+            for comment in comments:
+                tag_exists = comment.tags.filter(text=t.text)
+                if tag_exists.count() == 0:
+                    comment.tags.add(t)
+                    affected_comms.append(comment)
+            
+            if affected_comms:
+                h = History.objects.create(user=req_user, 
+                                           article=article,
+                                           action='tag_comments',
+                                           explanation='Add tag %s to comments' % t.text)
+                article.last_updated = datetime.datetime.now(tz=timezone.utc)
+                article.save()
+            
+                for com in affected_comms:
+                    recurse_up_post(com)
+                    h.comments.add(com)
+                
+            tag_count = article.comment_set.filter(tags__isnull=False).count()
+            if tag_count % 2 == 0:
+                from tasks import generate_tags
+                generate_tags.delay(article_id)
+                
+            if len(affected_comms) > 0:
+                response_dict = {'color': color, 'type': data['type'], 'node_ids': data['node_ids'], 'tag': data['tag'], 'id_str': data['id_str'], 'did_str': data['id_str']}
+                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
+            else:
+                Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
+    except Exception, e:
+        print e
+        return
 
 @channel_session_user
 def ws_disconnect(message):
