@@ -65,6 +65,8 @@ def ws_receive(message):
             handle_message(message, data, article, article_id)
         elif data_type == 'tag_one' or data_type == 'tag_selected':
             handle_tags(message, data, article, article_id)
+        elif data_type == 'delete_tags':
+            handle_delete_tags(message, data, article_id)
 
 def handle_message(message, data, article, article_id):
     try:
@@ -232,6 +234,61 @@ def handle_tags(message, data, article, article_id):
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
             else:
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
+    except Exception, e:
+        print e
+        return
+
+def handle_delete_tags(message, data, article_id):
+    try:
+        comment_ids = data['ids']
+        comment_ids = comment_ids.split(',')
+        ids = []
+        for idx in comment_ids:
+            if idx:
+                ids.append(int(idx))
+                
+        tag = data['tag']
+        req_user = message.user if message.user.is_authenticated() else None
+        
+        comments = Comment.objects.filter(id__in=ids)
+        
+        affected_comments = []
+        affected= False
+        a = None
+        
+        for comment in comments:
+            a = comment.article
+            tag_exists = comment.tags.filter(text=tag)
+            
+            if tag_exists.count() == 1:
+                comment.tags.remove(tag_exists[0])
+                affected_comments.append(comment)
+                affected = True
+            
+        if affected:
+            h = History.objects.create(user=req_user, 
+                                       article=a,
+                                       action='delete_tag',
+                                       explanation="Deleted tag %s from comments" % tag)
+            for comment in affected_comments:
+                h.comments.add(comment)
+            
+            a.last_updated = datetime.datetime.now(tz=timezone.utc)
+            a.save()
+            
+            recurse_up_post(comment)
+                
+        tag_count = a.comment_set.filter(tags__isnull=False).count()
+        if tag_count % 2 == 0:
+            from tasks import generate_tags
+            generate_tags.delay(a.id)
+
+        response_dict = {'type': data['type'], 'node_ids': data['node_ids'], 'tag': data['tag']}
+        if affected:
+            response_dict['affected'] = 1
+        else:
+            response_dict['affected'] = 0
+        Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
     except Exception, e:
         print e
         return

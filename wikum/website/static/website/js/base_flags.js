@@ -1093,56 +1093,14 @@ function delete_tags(evt, dids, ids, tag) {
 	var csrf = $('#csrf').text();
 	var data = {csrfmiddlewaretoken: csrf,
 		ids: dids,
-		tag: tag};
+		node_ids: ids,
+		tag: tag,
+		type: 'delete_tags'};
+	chatsock.send(JSON.stringify(data));
 
-		$.ajax({
-			type: 'POST',
-			url: '/delete_tags',
-			data: data,
-			success: function(res) {
-				success_noty();
-				$('#current_tags').children().each(function(index, element) {
-					var btn_text = $(this).text().trim().slice(0, -3);
-					
-					if (btn_text.trim() === tag) {
-						$(this).remove();
-					}
-				});
-				
-				var list_ids = ids.split(',');
-				
-				for (var i=0; i<list_ids.length; i++) {
-					if (list_ids[i].trim() != '') {
-						var i_x = list_ids[i].trim();
-						
-						$('#tags_' + i_x).children().each(function(index, element) {
-							var c = nodes_all[i_x -1];
-							var index = -1;
-							for (var i=0;i<c.tags.length;i++) {
-								if (c.tags[i][0] === tag) {
-									index = i;
-								}
-							}
-							if (index > -1) {
-								c.tags.splice(index, 1);
-							}
-							var btn_text = $(this).text().trim();
-							if (btn_text === tag) {
-								$(this).remove();
-							}
-						});
-						if ($('#tags_' + i_x).text().trim() === "Tags:") {
-							$('#tags_' + i_x).html('');
-						}
-					}
-				}
-			},
-			error: function() {
-				error_noty();
-			}
-		});
-		evt.preventDefault();
+	evt.preventDefault();
 }
+
 
 function show_comment_text(text, did) {
 
@@ -2043,9 +2001,11 @@ chatsock.onmessage = function(message) {
 	if (res.type === 'new_node' || res.type === 'reply_comment') {
 		handle_channel_message(res);
 	}
-
 	else if (res.type === 'tag_one' || res.type === 'tag_selected') {
 		handle_channel_tags(res);
+	}
+	else if (res.type == 'delete_tags') {
+		handle_channel_delete_tags(res);
 	}
 };
 
@@ -2194,6 +2154,49 @@ function handle_channel_tags(res) {
 	// Clear tag input
 	$("input#tag-form").prop("value", "");
 	if (res.user === $("#owner")[0].innerHTML) success_noty();
+}
+
+function handle_channel_delete_tags(res) {
+	var ids = res.node_ids;
+	var tag = res.tag;
+	if (res.type === 'delete_tags') {
+	    success_noty();
+		$('#current_tags').children().each(function(index, element) {
+			var btn_text = $(this).text().trim().slice(0, -3);
+			
+			if (btn_text.trim() === tag) {
+				$(this).remove();
+			}
+		});
+		
+		var list_ids = ids.split(',');
+		
+		for (var i=0; i<list_ids.length; i++) {
+			if (list_ids[i].trim() != '') {
+				var i_x = list_ids[i].trim();
+				
+				$('#tags_' + i_x).children().each(function(index, element) {
+					var c = nodes_all[i_x -1];
+					var index = -1;
+					for (var i=0;i<c.tags.length;i++) {
+						if (c.tags[i][0] === tag) {
+							index = i;
+						}
+					}
+					if (index > -1) {
+						c.tags.splice(index, 1);
+					}
+					var btn_text = $(this).text().trim();
+					if (btn_text === tag) {
+						$(this).remove();
+					}
+				});
+				if ($('#tags_' + i_x).text().trim() === "Tags:") {
+					$('#tags_' + i_x).html('');
+				}
+			}
+		}
+	}
 }
 
 function get_upvote_downvote(id) {
