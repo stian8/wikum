@@ -499,10 +499,22 @@ $('#reply_modal_box').on('show.bs.modal', function(e) {
 
 chatsock.onmessage = function(message) {
     var res = JSON.parse(message.data);
-    if (res.comment === 'unauthorized') {
-		unauthorized_noty();
-	} else {
-		if (res.type === 'new_node') {
+	if (res.type === 'new_node' || res.type === 'reply_comment') {
+		handle_channel_message(res);
+	}	
+};
+
+chatsock.onerror = function(message) {
+	var res = JSON.parse(message.data);
+	if (res.user === $("#owner")[0].innerHTML) error_noty();
+}
+
+
+function handle_channel_message(res) {
+	if (res.type === 'new_node') {
+		if (res.comment === 'unauthorized') {
+			unauthorized_noty();
+		} else {
 			new_d = {d_id: res.d_id,
 				 name: res.comment,
 				 summary: "",
@@ -518,7 +530,11 @@ chatsock.onmessage = function(message) {
 				 depth: 1
 				};
 			insert_node_to_children(new_d, new_d.parent);
-		} else if (res.type === 'reply_comment') {
+		}
+	} else if (res.type === 'reply_comment') {
+		if (res.comment === 'unauthorized') {
+			unauthorized_noty();
+		} else {
 			let node_id = res.node_id;
 			d = nodes_all[node_id-1];
 			new_d = {d_id: res.d_id,
@@ -550,29 +566,23 @@ chatsock.onmessage = function(message) {
 			d.children.push(new_d);
 			d._children.push(new_d);
 		}
-		
-		update(new_d.parent);
-
-		var text = construct_comment(new_d);
-		$('#comment_' + new_d.d_id).html(text);
-		$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
-		author_hover();
-		show_text(nodes_all[0]);
-		
-		d3.select("#node_" + new_d.d_id).style("fill",color);
-		if (res.type === 'reply_comment') d3.select('#node_' + d.id).style('fill', color);
-
-		highlight_box(new_d.d_id);
-		make_progress_bar();
-		if (res.user === $("#owner")[0].innerHTML) success_noty();
 	}
-};
+	
+	update(new_d.parent);
 
-chatsock.onerror = function(message) {
-	var res = JSON.parse(message.data);
-	if (res.user === $("#owner")[0].innerHTML) error_noty();
+	var text = construct_comment(new_d);
+	$('#comment_' + new_d.d_id).html(text);
+	$('#comment_' + new_d.id).attr('id', 'comment_' + new_d.id);
+	author_hover();
+	show_text(nodes_all[0]);
+	
+	d3.select("#node_" + new_d.d_id).style("fill",color);
+	if (res.type === 'reply_comment') d3.select('#node_' + d.id).style('fill', color);
+
+	highlight_box(new_d.d_id);
+	make_progress_bar();
+	if (res.user === $("#owner")[0].innerHTML) success_noty();
 }
-
 
 $('#evaluate_summary_modal_box').on('show.bs.modal', function(e) {
 	$("#evaluate_summary_modal_box").css({
