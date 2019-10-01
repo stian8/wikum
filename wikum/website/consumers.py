@@ -32,12 +32,13 @@ def ws_connect(message):
         log.debug('ws article does not exist article_id=%s', article_id)
         return
 
+    message.reply_channel.send({"accept": True})
     Group('article-'+str(article_id), channel_layer=message.channel_layer).add(message.reply_channel)
-
     message.channel_session['article'] = article.id
 
 @channel_session_user
 def ws_receive(message):
+    print("received message")
     # Look up the article from the channel session, bailing if it doesn't exist
     try:
         article_id = message.channel_session['article']
@@ -54,7 +55,7 @@ def ws_receive(message):
     try:
         data = json.loads(message['text'])
         # {u'comment': u'UH', u'owner': u'sunnytian', u'csrfmiddlewaretoken': u'1DQOoWSPiC6zWcfCVIfD8YdqTaU1H597', u'type': u'new_node', u'article': u'35'}
-
+        print(data)
     except ValueError:
         log.debug("ws message isn't json text=%s", text)
         return
@@ -195,6 +196,7 @@ def handle_tags(message, data, article, article_id):
                 from tasks import generate_tags
                 generate_tags.delay(article_id)
             
+            print("TAG REACHED")
             if affected:
                 response_dict = {'color': color, 'type': data['type'], 'node_id': data['node_id'], 'tag': data['tag'], 'id_str': data['id_str'], 'did_str': data['id_str']}
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
