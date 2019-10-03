@@ -20,7 +20,7 @@ def ws_connect(message):
     # of websocket). So, this is effectively a version of _get_object_or_404.
     try:
         # message['path'] = /[article_name]/visualization_flags
-        article_id, label = message['path'].decode('ascii').strip('/').split('/')
+        article_id, label = message['path'].strip('/').split('/')
         if label != 'visualization_flags':
             log.debug('invalid ws path=%s', message['path'])
             return
