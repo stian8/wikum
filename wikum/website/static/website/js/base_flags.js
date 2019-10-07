@@ -328,7 +328,7 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 			article: article_id,
 			type: 'new_node'};
 
-		data.id = evt.data.data_id;
+		data.id = evt.data.id;
 
 		chatsock.send(JSON.stringify(data));
 	});
