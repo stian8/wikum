@@ -328,7 +328,7 @@ $('#new_node_modal_box').on('show.bs.modal', function(e) {
 			article: article_id,
 			type: 'new_node'};
 
-		data.id = evt.data.id;
+		data.id = evt.data.data_id;
 
 		chatsock.send(JSON.stringify(data));
 	});
@@ -2017,6 +2017,7 @@ chatsock.onerror = function(message) {
 
 
 function handle_channel_message(res) {
+	console.log(res);
 	if (res.type === 'new_node') {
 		if (res.comment === 'unauthorized') {
 			unauthorized_noty();
@@ -2043,6 +2044,8 @@ function handle_channel_message(res) {
 		} else {
 			let node_id = res.node_id;
 			d = nodes_all[node_id-1];
+			console.log(d);
+			console.log(node_id);
 			new_d = {d_id: res.d_id,
 			          name: res.comment,
 			          summary: "",
