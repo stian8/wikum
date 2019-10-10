@@ -4,6 +4,7 @@ from __future__ import print_function
 
 # In[1]:
 
+from builtins import zip
 get_ipython().magic(u'matplotlib inline')
 import MySQLdb
 import pandas as pd

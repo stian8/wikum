@@ -1,9 +1,11 @@
+from __future__ import print_function
+from __future__ import absolute_import
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import json
 from django.http import JsonResponse
 
-from engine import *
+from .engine import *
 
 from django.http import HttpResponse
 from annoying.decorators import render_to
@@ -19,7 +21,7 @@ from website.import_data import get_source, get_article
 import urllib2
 
 from wikimarkup import parse
-import parse_helper
+from . import parse_helper
 import math
 import json
 from django.db.models import Q, Avg
@@ -197,7 +199,7 @@ def poll_status(request):
     data = 'Fail'
     if request.is_ajax():
         if 'task_id' in request.POST.keys() and request.POST['task_id']:
-            from tasks import import_article
+            from .tasks import import_article
             task_id = request.POST['task_id']
             task = import_article.AsyncResult(task_id)
             
@@ -255,7 +257,7 @@ def author_info(request):
     author_info = {}
     if username and url:
         a = Article.objects.filter(url=url, owner=owner)[num]
-        print a.url
+        print(a.url)
         if 'en.wikipedia' in a.url:
             author = CommentAuthor.objects.filter(username=username, is_wikipedia=True)
             if author.exists():
@@ -279,7 +281,7 @@ def author_info(request):
 def import_article(request):       
     data = 'Fail'
     if request.is_ajax():
-        from tasks import import_article
+        from .tasks import import_article
         owner = request.GET.get('owner', 'None')
         url = request.GET['article']
         job = import_article.delay(url, owner)
@@ -701,8 +703,8 @@ def new_node(request):
         else:
             return JsonResponse({'comment': 'unauthorized'})
 
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
         
 def reply_comment(request):
@@ -780,8 +782,8 @@ def reply_comment(request):
         else:
             return JsonResponse({'comment': 'unauthorized'})
 
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def summarize_comment(request):
@@ -848,8 +850,8 @@ def summarize_comment(request):
                                  'bottom_summary': bottom_summary})
         
         
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
            
            
@@ -961,8 +963,8 @@ def summarize_selected(request):
                                  'top_summary': top_summary,
                                  'bottom_summary': bottom_summary})
         
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()  
    
 def delete_node(did):
@@ -992,8 +994,8 @@ def delete_node(did):
             if parent.count() > 0:
                 recurse_up_post(parent[0])
             a.summary_num = a.summary_num - 1
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
 
 
 def get_summary(summary):
@@ -1118,11 +1120,11 @@ def summarize_comments(request):
                                  'top_summary': top_summary,
                                  'bottom_summary': bottom_summary})
         
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         
         import traceback
-        print traceback.format_exc()
+        print(traceback.format_exc())
         
         return HttpResponseBadRequest()  
 
@@ -1151,8 +1153,8 @@ def suggested_tags(request):
         
     
         return JsonResponse(resp)
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 
@@ -1199,15 +1201,15 @@ def tag_comments(request):
             
         tag_count = a.comment_set.filter(tags__isnull=False).count()
         if tag_count % 2 == 0:
-            from tasks import generate_tags
+            from .tasks import generate_tags
             generate_tags.delay(article_id)
             
         if len(affected_comms) > 0:
             return JsonResponse({'color': color})
         else:
             return JsonResponse({})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def hide_comments(request):
@@ -1244,8 +1246,8 @@ def hide_comments(request):
             
             
         return JsonResponse({})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def move_comments(request):
@@ -1286,8 +1288,8 @@ def move_comments(request):
         
         return JsonResponse({})
     
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
            
            
@@ -1392,15 +1394,15 @@ def tag_comment(request):
                 
         tag_count = a.comment_set.filter(tags__isnull=False).count()
         if tag_count % 2 == 0:
-            from tasks import generate_tags
+            from .tasks import generate_tags
             generate_tags.delay(article_id)
             
         if affected:
             return JsonResponse({'color': color})
         else:
             return JsonResponse()
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
     
 def delete_tags(request):
@@ -1447,15 +1449,15 @@ def delete_tags(request):
                 
         tag_count = a.comment_set.filter(tags__isnull=False).count()
         if tag_count % 2 == 0:
-            from tasks import generate_tags
+            from .tasks import generate_tags
             generate_tags.delay(a.id)
             
         if affected:
             return JsonResponse({'affected': 1})
         else:
             return JsonResponse({'affected': 0})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
     
 
@@ -1508,8 +1510,8 @@ def rate_summary(request):
        
             return JsonResponse({'success': True});
         return JsonResponse({'success': False});
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 
@@ -1538,8 +1540,8 @@ def delete_comment_summary(request):
             
         return JsonResponse({})
 
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 
@@ -1596,8 +1598,8 @@ def upvote_summary(request):
                                  })
         else:
             return JsonResponse({'success': False})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
     
 def downvote_summary(request):
@@ -1652,8 +1654,8 @@ def downvote_summary(request):
                                  })
         else:
             return JsonResponse({'success': False})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 
@@ -1702,8 +1704,8 @@ def hide_comment(request):
             a.save()
             
         return JsonResponse({})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
     
 def recurse_down_hidden(replies, count):
@@ -1754,8 +1756,8 @@ def hide_replies(request):
             return JsonResponse({'ids': ids})
         else:
             return JsonResponse({})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def tags(request):
@@ -1868,8 +1870,8 @@ def add_global_perm(request):
             a.save()
         
         return JsonResponse({})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def add_user_perm(request):
@@ -1918,8 +1920,8 @@ def add_user_perm(request):
                     data['created'] = created
         
         return JsonResponse(data)
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return HttpResponseBadRequest()
 
 def users(request):
@@ -2084,7 +2086,7 @@ def cluster_data(request):
     for post in posts:
         try:
             posts_vectors.append(pickle.loads(post.vector).toarray()[0])
-        except Exception, e:
+        except Exception as e:
             make_vector(post, a)
             posts_vectors.append(pickle.loads(post.vector).toarray()[0])
     

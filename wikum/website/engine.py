@@ -1,6 +1,11 @@
 from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.utils import old_div
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 import datetime
 from django.core.paginator import Paginator
@@ -169,7 +174,7 @@ def count_article(art):
         num_words_all = num_words_all - 250;
         num_words_still = num_words_still - 250;
     else:
-        half = num_words_all/2;
+        half = old_div(num_words_all,2);
         num_words_all = num_words_all - half;
         num_words_still = num_words_still - half;
 

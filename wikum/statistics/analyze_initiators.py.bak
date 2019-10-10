@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 # coding: utf-8
 
@@ -69,7 +70,7 @@ plt.show()
 resampled_df.idxmax()
 resampled_df.max()
 
-print int(resampled_df.max())
+print(int(resampled_df.max()))
 
 
 # In[7]:

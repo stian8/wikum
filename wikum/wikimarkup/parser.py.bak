@@ -17,15 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import division
 
-from builtins import zip
-from builtins import chr
-from builtins import str
-from builtins import hex
-from builtins import range
-from past.utils import old_div
-from builtins import object
 import re, random, locale
 from base64 import b64encode, b64decode
 
@@ -460,7 +452,7 @@ def registerInternalTemplateHook(tag, function):
 
 class BaseParser(object):
     def __init__(self):
-        self.uniq_prefix = u"\x07UNIQ" + str(random.randint(1, 1000000000))
+        self.uniq_prefix = u"\x07UNIQ" + unicode(random.randint(1, 1000000000))
         self.strip_state = {}
         self.arg_stack = []
         self.env = env
@@ -529,7 +521,7 @@ class BaseParser(object):
 
         commentState = {}
 
-        elements = ['nowiki',]  + list(mTagHooks.keys())
+        elements = ['nowiki',]  + mTagHooks.keys()
         if True: #wgRawHtml
             elements.append('html')
 
@@ -848,7 +840,7 @@ class BaseParser(object):
         text, norm, dec, hexval, _ = match.groups()
         if norm:
             if norm in _htmlEntities:
-                return chr(_htmlEntities[norm])
+                return unichr(_htmlEntities[norm])
             else:
                 sb = []
                 sb.append(u'&')
@@ -858,12 +850,12 @@ class BaseParser(object):
         elif dec:
             dec = int(dec)
             if self.validateCodepoint(dec):
-                return chr(dec)
+                return unichr(dec)
             return u'?'
         elif hexval:
             hexval = int(hexval, 16)
             if self.validateCodepoint(dec):
-                return chr(dec)
+                return unichr(dec)
             return u'?'
         return text
 
@@ -874,7 +866,7 @@ class BaseParser(object):
         return ''
 
     def _convertToUtf8(self, s):
-        return chr(int(s.group(1), 16))
+        return unichr(int(s.group(1), 16))
 
     def checkCss(self, value):
         """docstring for checkCss"""
@@ -917,7 +909,7 @@ class BaseParser(object):
         # of bold and italics mark-ups.
         numBold = 0
         numItalics = 0
-        for i,r in zip(list(range(len(arr))), arr):
+        for i,r in zip(range(len(arr)), arr):
             if i%2 == 1:
                 l = len(r)
                 if l == 4:
@@ -942,7 +934,7 @@ class BaseParser(object):
             firstSingleLetterWord = -1
             firstMultiLetterWord = -1
             firstSpace = -1
-            for i,r in zip(list(range(len(arr))), arr):
+            for i,r in zip(range(len(arr)), arr):
                 if i%2 == 1 and len(r) == 3:
                     x1 = arr[i-1][-1:]
                     x2 = arr[i-1][-2:-1]
@@ -975,7 +967,7 @@ class BaseParser(object):
         output = []
         buffer = None
         state = ''
-        for i,r in zip(list(range(len(arr))), arr):
+        for i,r in zip(range(len(arr)), arr):
             if i%2 == 0:
                 if state == 'both':
                     buffer.append(r)
@@ -1781,7 +1773,7 @@ class Parser(BaseParser):
         openingBraceStack = []      # this array will hold a stack of parentheses which are not closed yet
         lastOpeningBrace = -1       # last not closed parentheses
 
-        validOpeningBraces = u''.join(list(callbacks.keys()))
+        validOpeningBraces = u''.join(callbacks.keys())
     
         i = 0
         while i < len(text):
@@ -1946,7 +1938,7 @@ class Parser(BaseParser):
         has_opened_tr = [] # Did this table open a <tr> element?
         indent_level = 0 # indent level of the table
     
-        for k, x in zip(list(range(len(t))), t):
+        for k, x in zip(range(len(t)), t):
             x = x.strip()
             fc = x[0:1]
             matches = _zomgPat.match(x)
@@ -2225,7 +2217,7 @@ class Parser(BaseParser):
             # Create the anchor for linking from the TOC to the section
             anchor = canonized_headline;
             if refcount[headlineCount] > 1:
-                anchor += u'_' + str(refcount[headlineCount])
+                anchor += u'_' + unicode(refcount[headlineCount])
         
             if enoughToc:
                 toc.append(u'\n<li class="toclevel-')
@@ -2283,7 +2275,7 @@ class Parser(BaseParser):
         forceTocPosition = text.find(u"<!--MWTOC-->")
         full = []
         while i < len_blocks:
-            j = old_div(i,4)
+            j = i/4
             full.append(blocks[i])
             if enoughToc and not i and isMain and forceTocPosition == -1:
                 full += toc
@@ -2351,18 +2343,18 @@ def to_unicode(text, charset=None):
             # two possibilities for storing unicode strings in exception data:
             try:
                 # custom __str__ method on the exception (e.g. PermissionError)
-                return str(text)
+                return unicode(text)
             except UnicodeError:
                 # unicode arguments given to the exception (e.g. parse_date)
                 return ' '.join([to_unicode(arg) for arg in text.args])
-        return str(text)
+        return unicode(text)
     if charset:
-        return str(text, charset, 'replace')
+        return unicode(text, charset, 'replace')
     else:
         try:
-            return str(text, 'utf-8')
+            return unicode(text, 'utf-8')
         except UnicodeError:
-            return str(text, locale.getpreferredencoding(), 'replace')
+            return unicode(text, locale.getpreferredencoding(), 'replace')
 
 # tag hooks
 mTagHooks = {}

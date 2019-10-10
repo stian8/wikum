@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import str
 from wikimarkup import parse, registerInternalLinkHook, registerInternalTemplateHook, registerTagHook
 import re
 from wikitools import wiki, api
@@ -34,10 +35,10 @@ def galleryTagHook(parser_env, body, attributes={}):
                 request = api.APIRequest(site, params)
                 result = request.query()
                 try:
-                    url = result['query']['pages'].values()[0]['imageinfo'][0]['thumburl']
-                    desc_url = result['query']['pages'].values()[0]['imageinfo'][0]['descriptionurl']
-                    width = result['query']['pages'].values()[0]['imageinfo'][0]['thumbwidth']
-                    height = result['query']['pages'].values()[0]['imageinfo'][0]['thumbheight']
+                    url = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumburl']
+                    desc_url = list(result['query']['pages'].values())[0]['imageinfo'][0]['descriptionurl']
+                    width = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbwidth']
+                    height = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbheight']
                 except:
                     continue
                 text = '<li class="gallerybox" style="width: %spx"><div style="width: %spx">' % (float(int(width)) + 1.496, float(int(width)) + 1.496)
@@ -71,10 +72,10 @@ def galleryTagHook(parser_env, body, attributes={}):
                 request = api.APIRequest(site, params)
                 result = request.query()
                 try:
-                    url = result['query']['pages'].values()[0]['imageinfo'][0]['thumburl']
-                    desc_url = result['query']['pages'].values()[0]['imageinfo'][0]['descriptionurl']
-                    width = result['query']['pages'].values()[0]['imageinfo'][0]['thumbwidth']
-                    height = result['query']['pages'].values()[0]['imageinfo'][0]['thumbheight']
+                    url = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumburl']
+                    desc_url = list(result['query']['pages'].values())[0]['imageinfo'][0]['descriptionurl']
+                    width = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbwidth']
+                    height = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbheight']
                 except:
                     continue
                 
@@ -111,10 +112,10 @@ def galleryTagHook(parser_env, body, attributes={}):
                 request = api.APIRequest(site, params)
                 result = request.query()
                 try:
-                    url = result['query']['pages'].values()[0]['imageinfo'][0]['thumburl']
-                    desc_url = result['query']['pages'].values()[0]['imageinfo'][0]['descriptionurl']
-                    width = result['query']['pages'].values()[0]['imageinfo'][0]['thumbwidth']
-                    height = result['query']['pages'].values()[0]['imageinfo'][0]['thumbheight']
+                    url = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumburl']
+                    desc_url = list(result['query']['pages'].values())[0]['imageinfo'][0]['descriptionurl']
+                    width = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbwidth']
+                    height = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbheight']
                 except:
                     continue
                 
@@ -179,10 +180,10 @@ def fileHook(parser_env, namespace, body):
     request = api.APIRequest(site, params)
     result = request.query()
     try:
-        url = result['query']['pages'].values()[0]['imageinfo'][0]['thumburl']
-        desc_url = result['query']['pages'].values()[0]['imageinfo'][0]['descriptionurl']
-        width = result['query']['pages'].values()[0]['imageinfo'][0]['thumbwidth']
-        height = result['query']['pages'].values()[0]['imageinfo'][0]['thumbheight']
+        url = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumburl']
+        desc_url = list(result['query']['pages'].values())[0]['imageinfo'][0]['descriptionurl']
+        width = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbwidth']
+        height = list(result['query']['pages'].values())[0]['imageinfo'][0]['thumbheight']
     except:
         return file_name
     text = '<a href="%s" class="image">' % desc_url

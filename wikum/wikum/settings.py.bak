@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
+from __future__ import print_function
 
 import os
 import sys
@@ -19,7 +20,7 @@ SITE_ROOT = os.path.dirname(BASE_DIR)
 try:
     execfile(BASE_DIR + '/private.py')
 except IOError:
-    print "Unable to open configuration file!"
+    print("Unable to open configuration file!")
 
 
 _ENV_FILE_PATH = '/opt/wikum/env'

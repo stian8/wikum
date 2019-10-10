@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 from __future__ import print_function
 
+from past.builtins import execfile
 import os
 import sys
 

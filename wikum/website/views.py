@@ -1,5 +1,10 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 import json
@@ -18,7 +23,7 @@ from math import floor
 from django.views.decorators.csrf import csrf_exempt
 from website.import_data import get_source, get_article
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from wikimarkup import parse
 from . import parse_helper
@@ -70,7 +75,7 @@ def index(request):
                 'finished_articles': a,
                 'user': user}
         
-        if 'task_id' in request.session.keys() and request.session['task_id']:
+        if 'task_id' in list(request.session.keys()) and request.session['task_id']:
             task_id = request.session['task_id']
             resp['task_id'] = task_id
 
@@ -94,7 +99,7 @@ def about(request):
         art.url = re.sub('#', '%23', art.url)
         art.url = re.sub('&', '%26', art.url)
     
-    if 'task_id' in request.session.keys() and request.session['task_id']:
+    if 'task_id' in list(request.session.keys()) and request.session['task_id']:
         task_id = request.session['task_id']
         resp['task_id'] = task_id
     return resp
@@ -198,7 +203,7 @@ def visualization(request):
 def poll_status(request):
     data = 'Fail'
     if request.is_ajax():
-        if 'task_id' in request.POST.keys() and request.POST['task_id']:
+        if 'task_id' in list(request.POST.keys()) and request.POST['task_id']:
             from .tasks import import_article
             task_id = request.POST['task_id']
             task = import_article.AsyncResult(task_id)
@@ -1800,11 +1805,11 @@ def get_stats(request):
                 tags[t.text] = 0
             tags[t.text] += 1
             
-    author_list = sorted(authors.items(), key=lambda x: x[1], reverse=True)
+    author_list = sorted(list(authors.items()), key=lambda x: x[1], reverse=True)
     if len(author_list) > 5:
         author_list = author_list[:5]
         
-    tag_list = sorted(tags.items(), key=lambda x: x[1], reverse=True)
+    tag_list = sorted(list(tags.items()), key=lambda x: x[1], reverse=True)
     if len(tag_list) > 5:
         tag_list = tag_list[:5]
     
@@ -2107,7 +2112,7 @@ def cluster_data(request):
         
     count_dict = {}
     
-    for cluster, num in cluster_dict.items():
+    for cluster, num in list(cluster_dict.items()):
         if num != 1:
             if num not in count_dict:
                 count_dict[num] = []
@@ -2134,7 +2139,7 @@ def cluster_data(request):
     min_dist = 10000
     min_cluster = None
     
-    for cluster, vectors in vector_dict.items():
+    for cluster, vectors in list(vector_dict.items()):
         dist = np.mean(euclidean_distances(np.array(vectors), [cluster_centers[cluster]]))
         if dist < min_dist:
             min_dist = dist

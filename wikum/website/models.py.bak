@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 
-from builtins import object
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -75,7 +74,7 @@ class Permissions(models.Model):
     user = models.ForeignKey(User)
     access_level = models.IntegerField(choices=ACCESS_MODES, default=FULL_ACCESS)
     
-    class Meta(object):
+    class Meta:
         unique_together = ('article', 'user',)
 
 class History(models.Model):

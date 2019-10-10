@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from celery import shared_task, current_task
 from celery.exceptions import Ignore
 from website.import_data import get_source, get_article, get_disqus_posts,\
@@ -110,6 +111,6 @@ def generate_tags(article_id):
                 if not comment.tags.filter(id=row['suggested_tags']).exists():
                     comment.suggested_tags.add(row['suggested_tags'])
 
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
 

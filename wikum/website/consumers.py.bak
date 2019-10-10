@@ -1,10 +1,12 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import re
 import json
 import random
 import logging
 from channels import Group
 from channels.auth import channel_session, http_session_user, channel_session_user, channel_session_user_from_http
-from engine import *
+from .engine import *
 from django.contrib.auth.models import User
 from django.utils import timezone
 from website.models import Article, Source, CommentRating, CommentAuthor, Permissions
@@ -150,8 +152,8 @@ def handle_message(message, data, article, article_id):
             Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
         else:
             Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': 'unauthorized'})})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return
 
 def handle_tags(message, data, article, article_id):
@@ -193,7 +195,7 @@ def handle_tags(message, data, article, article_id):
                     
             tag_count = article.comment_set.filter(tags__isnull=False).count()
             if tag_count % 2 == 0:
-                from tasks import generate_tags
+                from .tasks import generate_tags
                 generate_tags.delay(article_id)
             
             print("TAG REACHED")
@@ -228,7 +230,7 @@ def handle_tags(message, data, article, article_id):
                 
             tag_count = article.comment_set.filter(tags__isnull=False).count()
             if tag_count % 2 == 0:
-                from tasks import generate_tags
+                from .tasks import generate_tags
                 generate_tags.delay(article_id)
                 
             if len(affected_comms) > 0:
@@ -236,8 +238,8 @@ def handle_tags(message, data, article, article_id):
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
             else:
                 Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return
 
 def handle_delete_tags(message, data, article_id):
@@ -282,7 +284,7 @@ def handle_delete_tags(message, data, article_id):
                 
         tag_count = a.comment_set.filter(tags__isnull=False).count()
         if tag_count % 2 == 0:
-            from tasks import generate_tags
+            from .tasks import generate_tags
             generate_tags.delay(a.id)
 
         response_dict = {'type': data['type'], 'node_ids': data['node_ids'], 'tag': data['tag']}
@@ -291,8 +293,8 @@ def handle_delete_tags(message, data, article_id):
         else:
             response_dict['affected'] = 0
         Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         return
 
 @channel_session_user

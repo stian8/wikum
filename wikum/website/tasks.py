@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
+from builtins import zip
 from celery import shared_task, current_task
 from celery.exceptions import Ignore
 from website.import_data import get_source, get_article, get_disqus_posts,\

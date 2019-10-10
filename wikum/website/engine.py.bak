@@ -1,3 +1,4 @@
+from __future__ import print_function
 import json
 import urllib2
 
@@ -161,8 +162,8 @@ def count_article(art):
     num_words_all = count_all_words(0, val2)
     num_words_still = count_unsummarized_words(0, val2)
     
-    print num_words_all
-    print num_words_still
+    print(num_words_all)
+    print(num_words_still)
 
     if num_words_all >= 250:
         num_words_all = num_words_all - 250;
