@@ -1,3 +1,4 @@
+from __future__ import print_function
 from wikimarkup import parse, registerInternalLinkHook, registerInternalTemplateHook, registerTagHook
 import re
 from wikitools import wiki, api
@@ -145,7 +146,7 @@ def galleryTagHook(parser_env, body, attributes={}):
 registerTagHook('gallery', galleryTagHook)
 
 def slinkHook(parser_env, namespace, body):
-    print body
+    print(body)
     vals = body.split('|')
     href = vals[1].strip()
     text = href[1:]
@@ -238,7 +239,7 @@ def colorHook(parser_env, namespace, body):
 
 def talkquoteHook(parser_env, namespace, body):
     text = '<blockquote>'
-    print body
+    print(body)
     res = body.split('=')
     res = '='.join(res[1:])
     res = res.split('|')
@@ -259,15 +260,15 @@ def emphHook(parser_env, namespace, body):
     return '<i>' + body + '</i>'
 
 def pbHook(parser_env, namespace, body):
-    print parser_env
-    print namespace
-    print body
+    print(parser_env)
+    print(namespace)
+    print(body)
     return '<br><br>'
 
 def sndHook(parser_env, namespace, body):
-    print parser_env
-    print namespace
-    print body
+    print(parser_env)
+    print(namespace)
+    print(body)
     return ' - '
 
 def passThroughHook(parser_env, namespace, body):

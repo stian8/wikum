@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import unittest
 
-from parser import parse
+from .parser import parse
 
 class WikimarkupTestCase(unittest.TestCase):
     def testHeadings(self):

@@ -2017,7 +2017,6 @@ chatsock.onerror = function(message) {
 
 
 function handle_channel_message(res) {
-	console.log(res);
 	if (res.type === 'new_node') {
 		if (res.comment === 'unauthorized') {
 			unauthorized_noty();
@@ -2044,8 +2043,6 @@ function handle_channel_message(res) {
 		} else {
 			let node_id = res.node_id;
 			d = nodes_all[node_id-1];
-			console.log(d);
-			console.log(node_id);
 			new_d = {d_id: res.d_id,
 			          name: res.comment,
 			          summary: "",
@@ -2066,14 +2063,7 @@ function handle_channel_message(res) {
 			          y0: d.y0,
 			         };
 			recurse_expand_all(new_d.parent);
-			if (!d.children) {
-			 d.children = [];
-			}
-			if (!d._children) {
-			 d._children = [];
-			}
-			d.children.push(new_d);
-			d._children.push(new_d);
+			insert_node_to_children(new_d, new_d.parent);
 		}
 	}
 	
