@@ -1999,7 +1999,6 @@ function downvote_summary(did, id) {
 
 chatsock.onmessage = function(message) {
     var res = JSON.parse(message.data);
-    console.log(res);
 	if (res.type === 'new_node' || res.type === 'reply_comment') {
 		handle_channel_message(res);
 	}
