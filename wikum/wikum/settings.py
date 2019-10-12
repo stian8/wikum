@@ -94,7 +94,7 @@ INSTALLED_APPS = [
     'account',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'tracking.middleware.VisitorTrackingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -145,17 +145,6 @@ DATABASES = {
         'PORT': '', # Set to empty string for default. Not used with sqlite3.
         'STORAGE_ENGINE': 'MyISAM'
     }
-}
-
-# Channel settings
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
-        },
-        "ROUTING": "wikum.routing.channel_routing",
-    },
 }
 
 # Password validation
@@ -227,3 +216,18 @@ DEFAULT_CHARSET = 'utf-8'
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
+# Channel settings
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+           "hosts": [(redis_host, 6379)],
+        },
+        "ROUTING": "wikum.routing.channel_routing",
+    },
+}
+
+# ASGI_APPLICATION should be set to your outermost router
+ASGI_APPLICATION = 'wikum.routing.application'

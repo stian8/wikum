@@ -298,7 +298,8 @@ $('#permission_modal_box').on('show.bs.modal', function(e) {
 
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
 // TODO: change WebSocket to ReconnectingWebSocket
-var chatsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/" + $('#article_id').text() + window.location.pathname);
+var chatsock = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/ws/article/" + $('#article_id').text() + window.location.pathname);
+console.log(chatsock);
 
 $('#new_node_modal_box').on('show.bs.modal', function(e) {
 	$("#new_node_textarea").val("");
