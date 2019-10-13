@@ -73,7 +73,7 @@ else:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.wikum.csail.mit.edu']
+ALLOWED_HOSTS = ['.wikum.csail.mit.edu', 'localhost', '128.52.139.135']
 
 #database connection max age
 CONN_MAX_AGE = 0
@@ -102,7 +102,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'account.middleware.LocaleMiddleware',
@@ -122,7 +121,7 @@ TEMPLATES = [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
-                'django.core.context_processors.i18n', # added this one
+                'django.template.context_processors.i18n', # added this one
                 'django.contrib.messages.context_processors.messages',
                 'account.context_processors.account',
             ],

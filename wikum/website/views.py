@@ -37,7 +37,7 @@ from website.models import Article, Source, CommentRating, CommentAuthor, Permis
 def index(request):
     user = request.user
 
-    if user.is_authenticated():
+    if user.is_authenticated:
         a = Article.objects.filter(owner=user).order_by('-last_updated').select_related()
         for art in a:
             art.url = re.sub('#', '%23', art.url)
@@ -109,7 +109,7 @@ def explore_public(request):
     user = request.user
     sort = request.GET.get('sort', None)
     
-    if not sort and not user.is_anonymous():
+    if not sort and not user.is_anonymous:
         a_1 = list(Article.objects.filter(owner=user).order_by('-percent_complete').select_related())
         a_2 = list(Article.objects.filter(~Q(owner=user)).order_by('-percent_complete').select_related())
         a = a_1 + a_2
@@ -161,14 +161,14 @@ def visualization_flag(request):
     article = Article.objects.get(id=article_id)
 
     permission = None
-    if user.is_authenticated():
+    if user.is_authenticated:
         permission = Permissions.objects.filter(user=user, article=article)
         if permission.exists():
             permission = permission[0]
         
-    if article.access_mode < 4 or (user.is_authenticated() and permission and permission.access_level < 4) or user == owner:
+    if article.access_mode < 4 or (user.is_authenticated and permission and permission.access_level < 4) or user == owner:
 
-        if owner != None and user.is_authenticated() and owner == user:
+        if owner != None and user.is_authenticated and owner == user:
             all_perms = Permissions.objects.filter(article=article).select_related()
         else:
             all_perms = []
@@ -652,17 +652,17 @@ def new_node(request):
         article = Article.objects.get(id=article_id)
 
         permission = None
-        if user.is_authenticated():
+        if user.is_authenticated:
             permission = Permissions.objects.filter(user=user, article=article)
             if permission.exists():
                 permission = permission[0]
-        if article.access_mode < 2 or (user.is_authenticated() and permission and (permission.access_level < 2)) or user == owner:
+        if article.access_mode < 2 or (user.is_authenticated and permission and (permission.access_level < 2)) or user == owner:
             comment = request.POST['comment']
-            req_user = request.user if request.user.is_authenticated() else None
-            req_username = request.user.username if request.user.is_authenticated() else None
+            req_user = request.user if request.user.is_authenticated else None
+            req_username = request.user.username if request.user.is_authenticated else None
             # if commentauthor for username use it; otherwise create it
             author = CommentAuthor.objects.filter(username=req_username)
-            if user.is_anonymous():
+            if user.is_anonymous:
                 req_username = "Anonymous"
                 author = CommentAuthor.objects.create(username=req_username, anonymous=True, is_wikum=True)
             else:
@@ -727,17 +727,17 @@ def reply_comment(request):
         article = Article.objects.get(id=article_id)
 
         permission = None
-        if user.is_authenticated():
+        if user.is_authenticated:
             permission = Permissions.objects.filter(user=user, article=article)
             if permission.exists():
                 permission = permission[0]
-        if article.access_mode < 2 or (user.is_authenticated() and permission and (permission.access_level < 2)) or user == owner:
+        if article.access_mode < 2 or (user.is_authenticated and permission and (permission.access_level < 2)) or user == owner:
             comment = request.POST['comment']
-            req_user = request.user if request.user.is_authenticated() else None
-            req_username = request.user.username if request.user.is_authenticated() else None
+            req_user = request.user if request.user.is_authenticated else None
+            req_username = request.user.username if request.user.is_authenticated else None
             # if commentauthor for username use it; otherwise create it
             author = CommentAuthor.objects.filter(username=req_username)
-            if user.is_anonymous():
+            if user.is_anonymous:
                 req_username = "Anonymous"
                 author = CommentAuthor.objects.create(username=req_username, anonymous=True, is_wikum=True)
             else:
@@ -799,7 +799,7 @@ def summarize_comment(request):
         summary = request.POST['comment']
         top_summary, bottom_summary = get_summary(summary)
         
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         c = Comment.objects.get(id=id)
         from_summary = c.summary + '\n----------\n' + c.extra_summary
@@ -890,7 +890,7 @@ def summarize_selected(request):
         
         top_summary, bottom_summary = get_summary(summary)
         
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         comments = Comment.objects.filter(id__in=ids)
         children = [c for c in comments if c.id in children_ids]
@@ -1025,7 +1025,7 @@ def summarize_comments(request):
 
         delete_nodes = request.POST.getlist('delete_nodes[]')
         
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         c = Comment.objects.get(id=id)
         
@@ -1138,7 +1138,7 @@ def suggested_tags(request):
     try:
         article_id = request.POST['article']
         a = Article.objects.get(id=article_id)
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         id = request.POST.get('id', None)
         if not id:
@@ -1167,7 +1167,7 @@ def tag_comments(request):
     try:
         article_id = request.POST['article']
         a = Article.objects.get(id=article_id)
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         ids = request.POST.getlist('ids[]')
         tag = request.POST['tag']
@@ -1221,7 +1221,7 @@ def hide_comments(request):
     try:
         article_id = request.POST['article']
         a = Article.objects.get(id=article_id)
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         ids = request.POST.getlist('ids[]')
         explain = request.POST['comment']
@@ -1260,7 +1260,7 @@ def move_comments(request):
         new_parent_id = request.POST['new_parent']
         node_id = request.POST['node']
         
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         comment = Comment.objects.get(id=node_id)
         
@@ -1363,7 +1363,7 @@ def tag_comment(request):
         a = Article.objects.get(id=article_id)
         id = request.POST['id']
         tag = request.POST['tag']
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         comment = Comment.objects.get(id=id)
         
@@ -1422,7 +1422,7 @@ def delete_tags(request):
                 ids.append(int(idx))
                 
         tag = request.POST['tag']
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         comments = Comment.objects.filter(id__in=ids)
         
@@ -1468,7 +1468,7 @@ def delete_tags(request):
 
 def rate_summary(request):
     try:
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         id = request.POST['id']
         neutral_rating = request.POST['neu']
         coverage_rating = request.POST['cov']
@@ -1526,7 +1526,7 @@ def delete_comment_summary(request):
         article = Article.objects.get(id=article_id)
         comment_id = request.POST['id']
         explain = request.POST['comment']
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
 
         comment = Comment.objects.get(id=comment_id)
         if not comment.is_replacement:
@@ -1552,7 +1552,7 @@ def delete_comment_summary(request):
 
 def upvote_summary(request):
     try:
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         if req_user:
             
             id = request.POST['id']
@@ -1609,7 +1609,7 @@ def upvote_summary(request):
     
 def downvote_summary(request):
     try:
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         if req_user:
             
             id = request.POST['id']
@@ -1670,7 +1670,7 @@ def hide_comment(request):
         a = Article.objects.get(id=article_id)
         id = request.POST['id']
         explain = request.POST['comment']
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         comment = Comment.objects.get(id=id)
         if comment.is_replacement:
@@ -1730,7 +1730,7 @@ def hide_replies(request):
         a = Article.objects.get(id=article_id)
         id = request.POST['id']
         explain = request.POST['comment']
-        req_user = request.user if request.user.is_authenticated() else None
+        req_user = request.user if request.user.is_authenticated else None
         
         c = Comment.objects.get(id=id)
 
