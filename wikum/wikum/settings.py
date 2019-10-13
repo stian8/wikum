@@ -224,7 +224,6 @@ CHANNEL_LAYERS = {
         "CONFIG": {
            "hosts": [(redis_host, 6379)],
         },
-        "ROUTING": "wikum.routing.channel_routing",
     },
 }
 
