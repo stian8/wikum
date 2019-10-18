@@ -13,12 +13,13 @@ from channels.generic.websocket import WebsocketConsumer
 from .engine import *
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.encoding import smart_text
 from website.models import Article, Source, CommentRating, CommentAuthor, Permissions
 from website.views import recurse_up_post, recurse_down_num_subtree, make_vector, count_article
 
 log = logging.getLogger(__name__)
 
-class ChatConsumer(WebsocketConsumer):
+class WikumConsumer(WebsocketConsumer):
     """
     This chat consumer handles websocket connections for chat clients.
     It uses AsyncJsonWebsocketConsumer, which means all the handling functions
@@ -62,46 +63,39 @@ class ChatConsumer(WebsocketConsumer):
             log.debug('recieved message, but article does not exist id=%s', article_id)
             return
 
+        message = {}
         # Parse out a article message from the content text, bailing if it doesn't
         # conform to the expected message format.
         try:
             data = json.loads(text_data)
             # {u'comment': u'UH', u'owner': u'sunnytian', u'csrfmiddlewaretoken': u'1DQOoWSPiC6zWcfCVIfD8YdqTaU1H597', u'type': u'new_node', u'article': u'35'}
-            print(data)
+            if 'type' in data:
+                data_type = data['type']
+                if data_type == 'new_node' or data_type == 'reply_comment':
+                    message = self.handle_message(data, self.scope["user"])
+                elif data_type == 'tag_one' or data_type == 'tag_selected':
+                    message = self.handle_tags(data, self.scope["user"])
+                elif data_type == 'delete_tags':
+                    message = self.handle_delete_tags(data, self.scope["user"])
         except ValueError:
             log.debug("ws message isn't json text=%s", text)
             return
 
-        if data and 'type' in data:
-            data_type = data['type']
-            if data_type == 'new_node' or data_type == 'reply_comment':
-                async_to_sync(self.channel_layer.group_send)(
-                    self.group_name,
-                    {
-                        'type': 'handle_message',
-                        'message': data
-                    }
-                )
-            elif data_type == 'tag_one' or data_type == 'tag_selected':
-                async_to_sync(self.channel_layer.group_send)(
-                    self.group_name,
-                    {
-                        'type': 'handle_tags',
-                        'message': data
-                    }
-                )
-            elif data_type == 'delete_tags':
-                async_to_sync(self.channel_layer.group_send)(
-                    self.group_name,
-                    {
-                        'type': 'handle_delete_tags',
-                        'message': data
-                    }
-                )
+        if data:
+            async_to_sync(self.channel_layer.group_send)(
+                self.group_name,
+                {
+                    'type': 'handle.data',
+                    'message': message
+                }
+            )
+
+    def handle_data(self, event):
+        message = event['message']
+        self.send(text_data=json.dumps(message))
 
 
-    def handle_message(self, event):
-        data = event['message']
+    def handle_message(self, data, user):
         article_id = self.article_id
         article = Article.objects.get(id=article_id)
         try:
@@ -178,20 +172,19 @@ class ChatConsumer(WebsocketConsumer):
                 article.last_updated = datetime.datetime.now(tz=timezone.utc)
 
                 article.save()
-                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type'], 'user': user.username}
+                response_dict = {'comment': comment, 'd_id': new_comment.id, 'author': req_username, 'type': data['type'], 'user': req_username}
                 if data['type'] == 'reply_comment':
                     response_dict['node_id'] = data['node_id']
-                self.send(text_data=json.dumps(response_dict))
+                return response_dict
                 #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
             else:
-                self.send(text_data=json.dumps({}))
+                return {}
                 #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({'comment': 'unauthorized'})})
         except Exception as e:
             print(e)
-            return
+            return {}
 
-    def handle_tags(self, event):
-        data = event['message']
+    def handle_tags(self, data, user):
         article_id = self.article_id
         article = Article.objects.get(id=article_id)
         try:
@@ -234,13 +227,14 @@ class ChatConsumer(WebsocketConsumer):
                 if tag_count % 2 == 0:
                     from .tasks import generate_tags
                     generate_tags.delay(article_id)
-                
-                print("TAG REACHED")
+
                 if affected:
                     response_dict = {'color': color, 'type': data['type'], 'node_id': data['node_id'], 'tag': data['tag'], 'id_str': data['id_str'], 'did_str': data['id_str']}
-                    Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
+                    return response_dict
+                    #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
                 else:
-                    Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
+                    return {}
+                    #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
             elif data['type'] == 'tag_selected':
                 ids = data['ids']
                 comments = Comment.objects.filter(id__in=ids, hidden=False)
@@ -272,15 +266,16 @@ class ChatConsumer(WebsocketConsumer):
                     
                 if len(affected_comms) > 0:
                     response_dict = {'color': color, 'type': data['type'], 'node_ids': data['node_ids'], 'tag': data['tag'], 'id_str': data['id_str'], 'did_str': data['id_str']}
-                    Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
+                    return response_dict
+                    #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
                 else:
-                    Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
+                    return {}
+                    #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps({})})
         except Exception as e:
             print(e)
-            return
+            return {}
 
-    def handle_delete_tags(self, event):
-        data = event['message']
+    def handle_delete_tags(self, data, user):
         article_id = self.article_id
         article = Article.objects.get(id=article_id)
         try:
@@ -332,7 +327,8 @@ class ChatConsumer(WebsocketConsumer):
                 response_dict['affected'] = 1
             else:
                 response_dict['affected'] = 0
-            Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
+            return response_dict
+            #Group('article-'+str(article_id), channel_layer=message.channel_layer).send({'text': json.dumps(response_dict)})
         except Exception as e:
             print(e)
-            return
+            return {}

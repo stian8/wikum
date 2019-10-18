@@ -4,7 +4,7 @@ from channels.http import AsgiHandler
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
-from website.consumers import ChatConsumer
+from website.consumers import WikumConsumer
 
 # The channel routing defines what connections get handled by what consumers,
 # selecting on either the connection type (ProtocolTypeRouter) or properties
@@ -22,7 +22,7 @@ application = ProtocolTypeRouter({
     "websocket": AuthMiddlewareStack(
         URLRouter([
             # URLRouter just takes standard Django path() or url() entries.
-            path('ws/article/<article_id>/visualization_flags', ChatConsumer),
+            path('ws/article/<article_id>/visualization_flags', WikumConsumer),
         ]),
     ),
 
