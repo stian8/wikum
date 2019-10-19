@@ -825,7 +825,7 @@ def summarize_comment(request):
         h.comments.add(c)
         recurse_up_post(c)
         
-        make_vector(c, a)
+        # make_vector(c, a)
         
         a.summary_num = a.summary_num + 1
         a.percent_complete = count_article(a)
@@ -937,7 +937,7 @@ def summarize_selected(request):
 
         recurse_down_num_subtree(new_comment)
 
-        make_vector(new_comment, a)
+        # make_vector(new_comment, a)
 
         a.summary_num = a.summary_num + 1
         a.percent_complete = count_article(a)
@@ -1095,7 +1095,7 @@ def summarize_comments(request):
         h.comments.add(c)
         
         
-        make_vector(new_comment, a)
+        # make_vector(new_comment, a)
         
         a.summary_num = a.summary_num + 1
         a.percent_complete = count_article(a)
