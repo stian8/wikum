@@ -7,6 +7,7 @@ import random
 import logging
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from channels.exceptions import StopConsumer
 
 # from channels import Group
 # from channels.auth import channel_session, http_session_user, channel_session_user, channel_session_user_from_http
@@ -51,6 +52,7 @@ class WikumConsumer(WebsocketConsumer):
             self.group_name,
             self.channel_name
         )
+        raise StopConsumer()
 
     def receive(self, text_data):
         try:

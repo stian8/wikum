@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os.path
 
 __all__ = ('__version__', '__build__')
@@ -28,6 +27,3 @@ def get_revision():
     return None
 
 __build__ = get_revision()
-
-from .parser import parse, parselite, registerTagHook, registerInternalLinkHook, registerInternalTemplateHook
-

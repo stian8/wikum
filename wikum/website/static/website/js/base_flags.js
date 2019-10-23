@@ -2054,12 +2054,10 @@ function handle_channel_message(res) {
 			          y: d.y,
 			          y0: d.y0,
 			         };
-			console.log(new_d);
 			recurse_expand_all(d);
 			insert_node_to_children(new_d, d);
 		}
 	}
-	console.log(new_d.parent);
 	update(new_d.parent);
 
 	var text = construct_comment(new_d);
