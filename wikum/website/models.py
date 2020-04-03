@@ -211,3 +211,13 @@ class CommentRating(models.Model):
     coverage_rating = models.IntegerField(null=True)
     quality_rating = models.IntegerField(null=True)
 
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, related_name="notification_recipient")
+    sender = models.ForeignKey(User, related_name="notification_sender")
+    date_created = models.DateTimeField(default=datetime.datetime.utcnow())
+    notice_type = models.ForeignKey(NoticeType)
+    seen = models.BooleanField(default=False)
+    url = models.URLField(max_length=300, blank=False, null=True)
+    message = models.CharField(max_length=2000, blank=False, null=True)
+
