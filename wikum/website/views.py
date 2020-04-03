@@ -1288,7 +1288,7 @@ def viz_data(request):
         val['hid'] = []
         val['replace'] = []
 
-        if posts != None and 'en.wikipedia' in a.url:
+        if posts != None:
             posts = remove_self_loops(posts, a)
         posts = posts[start:end]
         for post in posts:
@@ -1327,7 +1327,7 @@ def viz_data(request):
         elif sort == 'oldest':
             posts = a.comment_set.filter(reply_to_disqus=None).order_by('created_at')
 
-        if posts != None and 'en.wikipedia' in a.url:
+        if posts != None:
             posts = remove_self_loops(posts, a)
         posts = posts[start:end]
         val['children'], val['hid'], val['replace'], num_subchildren = recurse_viz(None, posts, False, a, False)
@@ -1507,7 +1507,7 @@ def subtree_data(request):
             if count > 1:
                 next_page = random.randint(0,count-1)
 
-        if posts != None and 'en.wikipedia' in a.url:
+        if posts != None:
             posts = remove_self_loops(posts, a)
         if len(posts) > next_page:
             posts = [posts[next_page]]
